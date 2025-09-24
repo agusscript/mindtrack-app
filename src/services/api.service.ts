@@ -1,3 +1,5 @@
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/v1";
 
@@ -7,46 +9,40 @@ export interface ApiRequestConfig {
 }
 
 class ApiService {
-  private baseURL: string;
+  private axiosInstance: AxiosInstance;
 
   constructor(baseURL: string) {
-    this.baseURL = baseURL;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-
-    const config: RequestInit = {
+    this.axiosInstance = axios.create({
+      baseURL,
+      timeout: 10000,
       headers: {
         "Content-Type": "application/json",
-        ...options.headers,
       },
-      ...options,
-    };
+    });
 
-    try {
-      const response = await fetch(url, config);
+    this.axiosInstance.interceptors.response.use(
+      (response: AxiosResponse) => {
+        return response;
+      },
+      (error) => {
+        if (error.response?.data?.message) {
+          const message = Array.isArray(error.response.data.message)
+            ? error.response.data.message.join(", ")
+            : error.response.data.message;
+          error.message = `HTTP ${error.response.status} - ${message}`;
+        }
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return Promise.reject(error);
       }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("API request failed:", error);
-      throw error;
-    }
+    );
   }
 
   async get<T>(endpoint: string, config?: ApiRequestConfig): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "GET",
+    const response = await this.axiosInstance.get<T>(endpoint, {
       headers: config?.headers,
+      timeout: config?.timeout,
     });
+    return response.data;
   }
 
   async post<T>(
@@ -54,11 +50,11 @@ class ApiService {
     data?: any,
     config?: ApiRequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
+    const response = await this.axiosInstance.post<T>(endpoint, data, {
       headers: config?.headers,
+      timeout: config?.timeout,
     });
+    return response.data;
   }
 
   async put<T>(
@@ -66,18 +62,19 @@ class ApiService {
     data?: any,
     config?: ApiRequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
+    const response = await this.axiosInstance.put<T>(endpoint, data, {
       headers: config?.headers,
+      timeout: config?.timeout,
     });
+    return response.data;
   }
 
   async delete<T>(endpoint: string, config?: ApiRequestConfig): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "DELETE",
+    const response = await this.axiosInstance.delete<T>(endpoint, {
       headers: config?.headers,
+      timeout: config?.timeout,
     });
+    return response.data;
   }
 }
 
