@@ -1,0 +1,29 @@
+import {
+	PASSWORD_LOWERCASE,
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+	PASSWORD_NUMBER,
+	PASSWORD_REQUIRED,
+	PASSWORD_SPECIAL,
+	PASSWORD_UPPERCASE,
+} from "@/src/schemas/schema-errors";
+import * as yup from "yup";
+
+export const PASSWORD_RULES = {
+  LOWERCASE: /[a-z]/,
+  UPPERCASE: /[A-Z]/,
+  NUMBER: /\d/,
+  SPECIAL: /[^\w\s]/,
+  MIN_LENGTH: 8,
+};
+
+export const passwordValidation = yup
+  .string()
+  .trim()
+  .required(PASSWORD_REQUIRED)
+  .min(PASSWORD_RULES.MIN_LENGTH, PASSWORD_MIN_LENGTH)
+  .max(50, PASSWORD_MAX_LENGTH)
+  .matches(PASSWORD_RULES.LOWERCASE, PASSWORD_LOWERCASE)
+  .matches(PASSWORD_RULES.UPPERCASE, PASSWORD_UPPERCASE)
+  .matches(PASSWORD_RULES.NUMBER, PASSWORD_NUMBER)
+  .matches(PASSWORD_RULES.SPECIAL, PASSWORD_SPECIAL);
