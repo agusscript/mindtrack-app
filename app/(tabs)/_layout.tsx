@@ -1,35 +1,43 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Stack } from "expo-router";
+import React from "react";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
+      }}
+    >
+      <Stack.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
         }}
       />
-      <Tabs.Screen
-        name="explore"
+      <Stack.Screen
+        name="dashboard"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Dashboard",
         }}
       />
-    </Tabs>
+      <Stack.Screen
+        name="sign-up"
+        options={{
+          title: "Sign Up",
+        }}
+      />
+      <Stack.Screen
+        name="sign-in"
+        options={{
+          title: "Sign In",
+        }}
+      />
+      <Stack.Screen
+        name="tasks"
+        options={{
+          title: "Tasks",
+        }}
+      />
+    </Stack>
   );
 }
