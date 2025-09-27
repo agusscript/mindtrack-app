@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "mindtrack-app",
+    "slug": "mindtrack-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "mindtrack-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
