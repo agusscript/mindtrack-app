@@ -1,4 +1,4 @@
-import { ISignInResponse, ISignUpResponse, ISignUpFormValues, ISignInFormValues } from "@/src/interfaces/ISignupFormValues";
+import { ISignInResponse, ISignUpResponse, ISignUpFormValues, ISignInFormValues } from "@/src/interfaces/IAuth";
 import { ApiRequestConfig, apiService } from "@/src/services/api.service";
 
 class AuthService {
