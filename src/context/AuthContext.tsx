@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
           Toast.show({
             type: "success",
             text1: "Registro exitoso",
-            text2: "Por favor, verifica tu correo electrónico",
+            text2: "Bienvenido a MindTrack App",
             position: "top",
             visibilityTime: 3000,
           });
