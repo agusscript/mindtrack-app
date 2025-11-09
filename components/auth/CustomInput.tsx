@@ -1,5 +1,4 @@
-import { Field, FieldProps, FormikErrors, FormikTouched } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import {
   KeyboardTypeOptions,
   StyleProp,
@@ -8,7 +7,10 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
+import { Field, FieldProps, FormikErrors, FormikTouched } from "formik";
+import { Ionicons } from "@expo/vector-icons";
 
 interface ICustomInputProps {
   formatValue?: (value: string) => string;
@@ -26,33 +28,54 @@ interface ICustomInputProps {
 }
 
 export default function CustomInput(props: ICustomInputProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <Field name={props.name}>
       {({ field, form }: FieldProps) => {
         const { name, value, onChange, onBlur } = field;
         const { errors, touched } = form;
         const hasError = errors[name] && touched[name];
+        const isPassword = props.type === "password";
 
         return (
           <View style={styles.container}>
             <Text style={styles.label}>{props.label}</Text>
-            <TextInput
-              value={value}
-              onChangeText={onChange(name)}
-              onBlur={onBlur(name)}
-              style={[styles.input, hasError && styles.inputError, props.style]}
-              placeholder={props.placeholder}
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize={props.autoCapitalize || "none"}
-              keyboardType={props.keyboardType || "default"}
-              editable={props.editable !== false}
-              secureTextEntry={props.type === "password"}
-              returnKeyType="next"
-              blurOnSubmit={false}
-            />
-            {!props.hideErrorMessage && hasError && typeof errors[name] === "string" && (
-              <Text style={styles.errorText}>{errors[name]}</Text>
-            )}
+
+            <View style={[styles.inputWrapper, hasError && styles.inputError]}>
+              <TextInput
+                value={value}
+                onChangeText={onChange(name)}
+                onBlur={onBlur(name)}
+                style={[styles.input, props.style]}
+                placeholder={props.placeholder}
+                placeholderTextColor="#9CA3AF"
+                autoCapitalize={props.autoCapitalize || "none"}
+                keyboardType={props.keyboardType || "default"}
+                editable={props.editable !== false}
+                secureTextEntry={isPassword && !showPassword}
+                returnKeyType="next"
+              />
+
+              {isPassword && (
+                <TouchableOpacity
+                  onPress={() => setShowPassword((prev) => !prev)}
+                  style={styles.iconContainer}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off" : "eye"}
+                    size={22}
+                    color="#6B7280"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {!props.hideErrorMessage &&
+              hasError &&
+              typeof errors[name] === "string" && (
+                <Text style={styles.errorText}>{errors[name]}</Text>
+              )}
           </View>
         );
       }}
@@ -70,15 +93,22 @@ const styles = StyleSheet.create({
     color: "#374151",
     marginBottom: 8,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#D1D5DB",
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
     backgroundColor: "#FFFFFF",
-    minHeight: 50,
+    paddingHorizontal: 12,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 14,
+  },
+  iconContainer: {
+    paddingHorizontal: 8,
   },
   inputError: {
     borderColor: "#EF4444",
