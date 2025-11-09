@@ -76,6 +76,10 @@ class ApiService {
     });
     return response.data;
   }
+
+  setAuthentication(token: string) {
+		return this.axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+	}
 }
 
 export const apiService = new ApiService(API_BASE_URL);
