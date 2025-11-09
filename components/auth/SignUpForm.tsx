@@ -65,7 +65,6 @@ export default function SignUpForm({
           <CustomInput
             errors={errors}
             touched={touched}
-            hideErrorMessage
             name="password"
             type="password"
             placeholder="Mínimo 6 caracteres"

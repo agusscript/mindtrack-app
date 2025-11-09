@@ -58,7 +58,6 @@ export default function SignInForm({
           <CustomInput
             errors={errors}
             touched={touched}
-            hideErrorMessage
             name="password"
             type="password"
             placeholder="Tu contraseña"
