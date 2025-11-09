@@ -5,24 +5,14 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { useAuthProvider } from "@/hooks/useAuthProvider";
+import { useAuthProvider } from "@/src/hooks/useAuthProvider";
 import { Colors } from "@/constants/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 export default function DashboardScreen() {
-  const { handleSignOut, isLoading } = useAuthProvider();
+  const { handleSignOut } = useAuthProvider();
   const router = useRouter();
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Cargando...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   const menuItems = [
     {
@@ -232,15 +222,5 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 18,
-    color: Colors.light.text,
-    opacity: 0.7,
   },
 });

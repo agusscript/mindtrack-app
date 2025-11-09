@@ -1,7 +1,7 @@
 import SignUpForm from "@/components/auth/SignUpForm";
 import CloseButton from "@/components/CloseButton";
 import { Colors } from "@/constants/theme";
-import { useAuthProvider } from "@/hooks/useAuthProvider";
+import { useAuthProvider } from "@/src/hooks/useAuthProvider";
 import { signUpSchema } from "@/src/schemas/signup.schema";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
@@ -10,14 +10,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect } from "react";
 
 export default function SignUpScreen() {
-  const { handleSignUp, loadingState, isAuthenticated } = useAuthProvider();
+  const { handleSignUp, isLoadingSignUp, user } = useAuthProvider();
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       router.replace("/(tabs)/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [user, router]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,7 +44,7 @@ export default function SignUpScreen() {
             <SignUpForm
               values={values}
               errors={errors}
-              loading={loadingState}
+              loading={isLoadingSignUp}
               touched={touched}
               handleSubmit={handleSubmit}
             />

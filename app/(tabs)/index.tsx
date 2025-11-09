@@ -6,30 +6,20 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuthProvider } from "@/hooks/useAuthProvider";
+import { useAuthProvider } from "@/src/hooks/useAuthProvider";
 import { Colors } from "@/constants/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect } from "react";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthProvider();
+  const { user } = useAuthProvider();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       router.replace("/(tabs)/dashboard");
     }
-  }, [isAuthenticated, router]);
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Cargando...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  }, [user, router]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,16 +83,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingVertical: 32,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 18,
-    color: Colors.light.text,
-    opacity: 0.7,
   },
   headerContainer: {
     alignItems: "center",

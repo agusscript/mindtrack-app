@@ -1,7 +1,7 @@
 import SignInForm from "@/components/auth/SignInForm";
 import CloseButton from "@/components/CloseButton";
 import { Colors } from "@/constants/theme";
-import { useAuthProvider } from "@/hooks/useAuthProvider";
+import { useAuthProvider } from "@/src/hooks/useAuthProvider";
 import { signInSchema } from "@/src/schemas/signin.schema";
 import { useRouter } from "expo-router";
 import { Formik } from "formik";
@@ -10,14 +10,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect } from "react";
 
 export default function SignInScreen() {
-  const { handleSignIn, loadingState, isAuthenticated } = useAuthProvider();
+  const { handleSignIn, isLoadingSignIn, user } = useAuthProvider();
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       router.replace("/(tabs)/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [user, router]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,7 +32,7 @@ export default function SignInScreen() {
         validationSchema={signInSchema}
         onSubmit={async (values) => {
           try {
-            await handleSignIn(values);
+            await handleSignIn(values.email, values.password);
           } catch (error) {
             console.error("Error signing in:", error);
           }
@@ -43,7 +43,7 @@ export default function SignInScreen() {
             <SignInForm
               values={values}
               errors={errors}
-              loading={loadingState}
+              loading={isLoadingSignIn}
               touched={touched}
               handleSubmit={handleSubmit}
             />
