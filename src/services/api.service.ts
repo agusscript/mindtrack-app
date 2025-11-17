@@ -69,6 +69,18 @@ class ApiService {
     return response.data;
   }
 
+  async patch<T>(
+    endpoint: string,
+    data?: any,
+    config?: ApiRequestConfig
+  ): Promise<T> {
+    const response = await this.axiosInstance.patch<T>(endpoint, data, {
+      headers: config?.headers,
+      timeout: config?.timeout,
+    });
+    return response.data;
+  }
+
   async delete<T>(endpoint: string, config?: ApiRequestConfig): Promise<T> {
     const response = await this.axiosInstance.delete<T>(endpoint, {
       headers: config?.headers,
