@@ -6,16 +6,19 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Colors } from "@/constants/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { quoteService } from "@/src/services/quote.service";
 import { IQuote } from "@/src/interfaces/IQuote";
+import ViewShot, { captureRef } from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 
 export default function QuotesScreen() {
   const [quote, setQuote] = useState<IQuote | null>(null);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const viewShotRef = useRef<ViewShot>(null);
 
   const fetchQuote = async () => {
     try {
@@ -29,6 +32,21 @@ export default function QuotesScreen() {
       );
     } finally {
       setIsLoadingQuote(false);
+    }
+  };
+
+  const shareQuoteImage = async () => {
+    if (!viewShotRef.current) return;
+
+    try {
+      const uri = await captureRef(viewShotRef, {
+        format: "png",
+        quality: 1,
+      });
+
+      await Sharing.shareAsync(uri);
+    } catch (error) {
+      console.log("Error sharing image:", error);
     }
   };
 
@@ -67,19 +85,29 @@ export default function QuotesScreen() {
               </TouchableOpacity>
             </View>
           ) : quote ? (
-            <View style={styles.quoteCard}>
-              <View style={styles.quoteIconContainer}>
-                <Text style={styles.quoteIcon}>💭</Text>
-              </View>
-              <Text style={styles.quoteLabel}>Frase del día</Text>
-              <View style={styles.quoteTextContainer}>
-                <Text style={styles.quoteText}>&ldquo;{quote.q}&rdquo;</Text>
-              </View>
-              <View style={styles.quoteAuthorContainer}>
-                <View style={styles.authorLine} />
-                <Text style={styles.quoteAuthor}>{quote.a}</Text>
-              </View>
-            </View>
+            <>
+              <ViewShot ref={viewShotRef} style={styles.quoteCard}>
+                <View style={styles.quoteIconContainer}>
+                  <Text style={styles.quoteIcon}>💭</Text>
+                </View>
+                <Text style={styles.quoteLabel}>Frase del día</Text>
+                <View style={styles.quoteTextContainer}>
+                  <Text style={styles.quoteText}>&ldquo;{quote.q}&rdquo;</Text>
+                </View>
+                <View style={styles.quoteAuthorContainer}>
+                  <View style={styles.authorLine} />
+                  <Text style={styles.quoteAuthor}>{quote.a}</Text>
+                </View>
+              </ViewShot>
+
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={shareQuoteImage}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.shareButtonText}>Compartir imagen</Text>
+              </TouchableOpacity>
+            </>
           ) : null}
         </View>
 
@@ -240,5 +268,17 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     textAlign: "center",
     lineHeight: 20,
+  },
+  shareButton: {
+    marginTop: 20,
+    backgroundColor: Colors.light.tint,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  shareButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
