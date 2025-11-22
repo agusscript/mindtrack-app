@@ -24,6 +24,14 @@ export default function DashboardScreen() {
       isAvailable: true,
     },
     {
+      id: "quotes",
+      title: "Frase Motivacional",
+      description: "Inspírate con la frase del día",
+      icon: "💭",
+      onPress: () => router.push("/quotes" as any),
+      isAvailable: true,
+    },
+    {
       id: "habits",
       title: "Hábitos",
       description: "Seguimiento de hábitos diarios",

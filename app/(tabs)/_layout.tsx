@@ -40,6 +40,12 @@ export default function TabLayout() {
             title: "Tasks",
           }}
         />
+        <Stack.Screen
+          name="quotes"
+          options={{
+            title: "Quotes",
+          }}
+        />
       </Stack>
     </AuthProvider>
   );
