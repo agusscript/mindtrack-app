@@ -13,6 +13,7 @@ import { quoteService } from "@/src/services/quote.service";
 import { IQuote } from "@/src/interfaces/IQuote";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function QuotesScreen() {
   const [quote, setQuote] = useState<IQuote | null>(null);
@@ -106,6 +107,12 @@ export default function QuotesScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.shareButtonText}>Compartir imagen</Text>
+                <Ionicons
+                  name="share-outline"
+                  size={20}
+                  color="#fff"
+                  style={{ marginRight: 6 }}
+                />
               </TouchableOpacity>
             </>
           ) : null}
@@ -275,6 +282,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
   },
   shareButtonText: {
     color: "#fff",
