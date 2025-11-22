@@ -20,7 +20,7 @@ export default function DashboardScreen() {
       title: "Lista de Tareas",
       description: "Organiza tus tareas diarias",
       icon: "📝",
-      onPress: () => router.push("/tasks"),
+      onPress: () => router.push("/(tabs)/tasks"),
       isAvailable: true,
     },
     {
@@ -28,7 +28,7 @@ export default function DashboardScreen() {
       title: "Frase Motivacional",
       description: "Inspírate con la frase del día",
       icon: "💭",
-      onPress: () => router.push("/quotes" as any),
+      onPress: () => router.push("/(tabs)/quotes"),
       isAvailable: true,
     },
     {
