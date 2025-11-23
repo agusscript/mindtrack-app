@@ -14,6 +14,7 @@ import CustomButton from "@/components/CustomButton";
 import { AuthContext } from "@/src/context/AuthContext";
 import { IHabit } from "@/src/interfaces/IHabit";
 import { habitService } from "@/src/services/habit.service";
+import { sortByDateDesc } from "@/src/utils/sortByDate";
 import HabitItem from "@/components/habits/HabitItem";
 import AddHabitForm from "@/components/habits/AddHabitForm";
 import Toast from "react-native-toast-message";
@@ -106,7 +107,8 @@ export default function HabitsListScreen() {
     try {
       setError(null);
       const fetchedHabits = await habitService.getAllByUserId(user.id);
-      setHabits(fetchedHabits);
+      const sortedHabits = sortByDateDesc(fetchedHabits);
+      setHabits(sortedHabits);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al cargar los hábitos";

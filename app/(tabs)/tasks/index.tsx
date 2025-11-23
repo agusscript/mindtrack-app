@@ -14,6 +14,7 @@ import CustomButton from "@/components/CustomButton";
 import { AuthContext } from "@/src/context/AuthContext";
 import { ITask } from "@/src/interfaces/ITask";
 import { taskService } from "@/src/services/task.service";
+import { sortByDateDesc } from "@/src/utils/sortByDate";
 import TaskItem from "@/components/tasks/TaskItem";
 import AddTaskForm from "@/components/tasks/AddTaskForm";
 import Toast from "react-native-toast-message";
@@ -106,7 +107,8 @@ export default function TasksListScreen() {
     try {
       setError(null);
       const fetchedTasks = await taskService.getAllByUserId(user.id);
-      setTasks(fetchedTasks);
+      const sortedTasks = sortByDateDesc(fetchedTasks);
+      setTasks(sortedTasks);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al cargar las tareas";
