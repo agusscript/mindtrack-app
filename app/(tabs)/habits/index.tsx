@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   Text,
+  Modal,
+  Pressable,
 } from "react-native";
 import CloseButton from "@/components/CloseButton";
 import CustomButton from "@/components/CustomButton";
@@ -17,6 +19,7 @@ import { habitService } from "@/src/services/habit.service";
 import { sortByDateDesc } from "@/src/utils/sortByDate";
 import HabitItem from "@/components/habits/HabitItem";
 import AddHabitForm from "@/components/habits/AddHabitForm";
+import TimePickerModal from "@/components/habits/TimePickerModal";
 import Toast from "react-native-toast-message";
 
 const Container = styled.View`
@@ -96,6 +99,12 @@ export default function HabitsListScreen() {
   const [isAdding, setIsAdding] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
+  const [isSavingNotification, setIsSavingNotification] = useState(false);
+  const [selectedHabitId, setSelectedHabitId] = useState<number | null>(null);
+  const [selectedHabitTime, setSelectedHabitTime] = useState<string | null>(
+    null
+  );
 
   const fetchHabits = useCallback(async () => {
     if (!user?.id) {
@@ -219,6 +228,112 @@ export default function HabitsListScreen() {
     fetchHabits();
   };
 
+  const handleNotificationPress = (id: number) => {
+    const habit = habits.find((h) => h.id === id);
+    if (habit) {
+      setSelectedHabitId(id);
+      setSelectedHabitTime(habit.notificationTime || null);
+      setTimePickerVisible(true);
+    }
+  };
+
+  const handleSaveNotification = async (time?: string) => {
+    if (!selectedHabitId) return;
+
+    setIsSavingNotification(true);
+    try {
+      const updatedHabit = await habitService.update(selectedHabitId, {
+        notificationTime: time || undefined,
+      });
+      setHabits((prev) =>
+        prev.map((habit) =>
+          habit.id === selectedHabitId ? updatedHabit : habit
+        )
+      );
+
+      if (time) {
+        Toast.show({
+          type: "success",
+          text1: "Notificación configurada",
+          text2: `Hora establecida: ${time}`,
+          position: "top",
+          visibilityTime: 2000,
+        });
+      } else {
+        Toast.show({
+          type: "success",
+          text1: "Notificación desactivada",
+          text2: "La notificación se ha eliminado correctamente",
+          position: "top",
+          visibilityTime: 2000,
+        });
+      }
+
+      setTimePickerVisible(false);
+      setSelectedHabitId(null);
+      setSelectedHabitTime(null);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al actualizar la notificación";
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: errorMessage,
+        position: "top",
+        visibilityTime: 3000,
+      });
+    } finally {
+      setIsSavingNotification(false);
+    }
+  };
+
+  const handleDisableNotification = async () => {
+    if (!selectedHabitId) return;
+
+    handleCloseTimePicker();
+    setIsSavingNotification(false);
+    setHabits((prev) =>
+      prev.map((habit) =>
+        habit.id === selectedHabitId
+          ? { ...habit, notificationTime: null }
+          : habit
+      )
+    );
+    Toast.show({
+      type: "success",
+      text1: "Notificación desactivada",
+      text2: "La notificación se ha desactivado correctamente",
+      position: "top",
+      visibilityTime: 2000,
+    });
+
+    try {
+      await habitService.update(selectedHabitId!, {
+        notificationTime: null,
+      });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al desactivar la notificación";
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: errorMessage,
+        position: "top",
+        visibilityTime: 3000,
+      });
+    }
+  };
+
+  const handleCloseTimePicker = () => {
+    setTimePickerVisible(false);
+    setSelectedHabitId(null);
+    setSelectedHabitTime(null);
+  };
+
   if (isLoading) {
     return (
       <Container>
@@ -276,7 +391,7 @@ export default function HabitsListScreen() {
               <HabitItem
                 habit={item}
                 onToggleActive={handleToggleActive}
-                onNotificationPress={() => {}}
+                onNotificationPress={handleNotificationPress}
                 onDelete={handleDelete}
               />
             )}
@@ -303,6 +418,33 @@ export default function HabitsListScreen() {
             showsVerticalScrollIndicator={false}
           />
         </ContentContainer>
+
+        <Modal
+          visible={timePickerVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={handleCloseTimePicker}
+        >
+          <Pressable
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              justifyContent: "flex-end",
+            }}
+            onPress={handleCloseTimePicker}
+          >
+            <Pressable onPress={(e) => e.stopPropagation()}>
+              <TimePickerModal
+                visible={timePickerVisible}
+                onClose={handleCloseTimePicker}
+                initialTime={selectedHabitTime}
+                onSave={handleSaveNotification}
+                loading={isSavingNotification}
+                onDisableNotification={handleDisableNotification}
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
       </SafeArea>
     </Container>
   );
