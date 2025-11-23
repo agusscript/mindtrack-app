@@ -36,8 +36,8 @@ export default function DashboardScreen() {
       title: "Hábitos",
       description: "Seguimiento de hábitos diarios",
       icon: "🎯",
-      onPress: () => {},
-      isAvailable: false,
+      onPress: () => router.push("/(tabs)/habits"),
+      isAvailable: true,
     },
     {
       id: "mood-tracker",
