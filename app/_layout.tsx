@@ -3,12 +3,15 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
+import { useNotificationsSetup } from "@/src/hooks/useNotificationsSetup";
 
 export const unstable_settings = {
   anchor: "(tabs)",
 };
 
 export default function RootLayout() {
+  useNotificationsSetup();
+
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack>
