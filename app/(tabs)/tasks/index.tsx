@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import CloseButton from "@/components/CloseButton";
 import CustomButton from "@/components/CustomButton";
-import { AuthContext } from "@/src/context/AuthContext";
+import { AuthContext, setLocalStorageItem } from "@/src/context/AuthContext";
 import { ITask } from "@/src/interfaces/ITask";
 import { taskService } from "@/src/services/task.service";
 import { sortByDateDesc } from "@/src/utils/sortByDate";

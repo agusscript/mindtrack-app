@@ -1,4 +1,9 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance } from "axios";
+import { authService } from "./auth.service";
+import {
+  getLocalStorageItem,
+  setLocalStorageItem,
+} from "../context/AuthContext";
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/v1";
@@ -15,21 +20,42 @@ class ApiService {
     this.axiosInstance = axios.create({
       baseURL,
       timeout: 10000,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
 
+    this.initializeInterceptor();
+  }
+
+  private initializeInterceptor() {
     this.axiosInstance.interceptors.response.use(
-      (response: AxiosResponse) => {
-        return response;
-      },
-      (error) => {
-        if (error.response?.data?.message) {
-          const message = Array.isArray(error.response.data.message)
-            ? error.response.data.message.join(", ")
-            : error.response.data.message;
-          error.message = `HTTP ${error.response.status} - ${message}`;
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          const refreshToken = await getLocalStorageItem("refreshToken");
+
+          if (!refreshToken) {
+            return Promise.reject(error);
+          }
+
+          try {
+            const data = await authService.refreshToken({ refreshToken });
+
+            await setLocalStorageItem("accessToken", data.accessToken);
+
+            this.setAuthentication(data.accessToken);
+
+            originalRequest.headers[
+              "Authorization"
+            ] = `Bearer ${data.accessToken}`;
+
+            return this.axiosInstance(originalRequest);
+          } catch (e) {
+            return Promise.reject(e);
+          }
         }
 
         return Promise.reject(error);
@@ -89,9 +115,11 @@ class ApiService {
     return response.data;
   }
 
-  setAuthentication(token: string) {
-		return this.axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-	}
+  setAuthentication(accessToken: string) {
+    this.axiosInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${accessToken}`;
+  }
 }
 
 export const apiService = new ApiService(API_BASE_URL);

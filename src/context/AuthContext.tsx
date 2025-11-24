@@ -13,17 +13,22 @@ import Toast from "react-native-toast-message";
 
 export const AuthContext = createContext<IAuthContext | null>(null);
 
-function setLocalStorageItem(key: string, value: string) {
-  SecureStore.setItem(key, value);
+export function getLocalStorageItem(key: string) {
+  return SecureStore.getItemAsync(key);
 }
 
-function removeLocalStorageItem(key: string) {
-  SecureStore.deleteItemAsync(key);
+export function setLocalStorageItem(key: string, value: string) {
+  return SecureStore.setItemAsync(key, value);
+}
+
+export function removeLocalStorageItem(key: string) {
+  return SecureStore.deleteItemAsync(key);
 }
 
 export const AuthProvider = ({ children }: IReactChildrenProps) => {
   const [isLoadingSignIn, setIsLoadingSignIn] = useState(false);
   const [isLoadingSignUp, setIsLoadingSignUp] = useState(false);
+  const [isLoadingSignOut, setIsLoadingSignOut] = useState(false);
   const [user, setUser] = useState<IUser | null | undefined>(undefined);
   const navigate = useRouter();
 
@@ -32,13 +37,14 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
       async function signIn(email: string, password: string) {
         setIsLoadingSignIn(true);
         try {
-          const { token, user } = await authService.signIn({
+          const { accessToken, refreshToken, user } = await authService.signIn({
             email,
             password,
           });
-          setLocalStorageItem("accessToken", token);
+          setLocalStorageItem("accessToken", accessToken);
+          setLocalStorageItem("refreshToken", refreshToken);
           setLocalStorageItem("email", email);
-          apiService.setAuthentication(token);
+          apiService.setAuthentication(accessToken);
           setUser(user);
           Toast.show({
             type: "success",
@@ -103,10 +109,33 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
     [navigate]
   );
 
-  const handleSignOut = useCallback(() => {
-    removeLocalStorageItem("accessToken");
-    removeLocalStorageItem("email");
+  const handleSignOut = useCallback(async () => {
+    try {
+      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+
+      if (refreshToken) await authService.signOut({ refreshToken });
+      
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Error al cerrar sesión",
+        text2:
+          error instanceof Error
+            ? error.message
+            : `Error desconocido: ${error}`,
+        position: "top",
+        visibilityTime: 3000,
+      });
+    } finally {
+      setIsLoadingSignOut(false);
+    }
+  
+    await removeLocalStorageItem("accessToken");
+    await removeLocalStorageItem("refreshToken");
+    await removeLocalStorageItem("email");
+  
     setUser(null);
+  
     Toast.show({
       type: "success",
       text1: "¡Hasta luego!",
@@ -114,12 +143,15 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
       position: "top",
       visibilityTime: 2000,
     });
+  
     navigate.replace("/(tabs)/sign-in");
   }, [navigate]);
+  
 
   const contextValue = {
     isLoadingSignIn,
     isLoadingSignUp,
+    isLoadingSignOut,
     handleSignIn,
     handleSignOut,
     handleSignUp,

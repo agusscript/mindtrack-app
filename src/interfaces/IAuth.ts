@@ -9,6 +9,14 @@ export interface ISignInFormValues {
   password: string;
 }
 
+export interface ISignOutFormValues {
+  refreshToken: string;
+}
+
+export interface IRefreshTokenFormValues {
+  refreshToken: string;
+}
+
 export interface IUser {
   id: number;
   name: string;
@@ -29,6 +37,7 @@ export interface ISignUpResponse {
 }
 
 export interface ISignInResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   user: IUser;
 }
