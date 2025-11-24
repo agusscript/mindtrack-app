@@ -30,10 +30,9 @@ export interface IAuthState {
 }
 
 export interface ISignUpResponse {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
+  accessToken: string;
+  refreshToken: string;
+  user: IUser;
 }
 
 export interface ISignInResponse {

@@ -78,8 +78,15 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
       async function signUp(signupValues: ISignUpFormValues) {
         setIsLoadingSignUp(true);
         try {
-          await authService.signUp(signupValues);
-
+          const { accessToken, refreshToken, user } = await authService.signUp(signupValues);
+  
+          await setLocalStorageItem("accessToken", accessToken);
+          await setLocalStorageItem("refreshToken", refreshToken);
+          await setLocalStorageItem("email", signupValues.email);
+  
+          apiService.setAuthentication(accessToken);
+          setUser(user);
+  
           Toast.show({
             type: "success",
             text1: "Registro exitoso",
@@ -87,7 +94,7 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
             position: "top",
             visibilityTime: 3000,
           });
-
+  
           navigate.push("/(tabs)/dashboard");
         } catch (error: unknown) {
           Toast.show({
@@ -108,6 +115,7 @@ export const AuthProvider = ({ children }: IReactChildrenProps) => {
     },
     [navigate]
   );
+  
 
   const handleSignOut = useCallback(async () => {
     try {
