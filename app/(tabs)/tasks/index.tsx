@@ -17,6 +17,7 @@ import { taskService } from "@/src/services/task.service";
 import { sortByDateDesc } from "@/src/utils/sortByDate";
 import TaskItem from "@/components/tasks/TaskItem";
 import AddTaskForm from "@/components/tasks/AddTaskForm";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import Toast from "react-native-toast-message";
 
 const Container = styled.View`
@@ -96,6 +97,13 @@ export default function TasksListScreen() {
   const [isAdding, setIsAdding] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] =
+    useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     if (!user?.id) {
@@ -190,10 +198,21 @@ export default function TasksListScreen() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
+    const task = tasks.find((t) => t.id === id);
+    if (task) {
+      setTaskToDelete({ id: task.id, title: task.title });
+      setDeleteConfirmationVisible(true);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!taskToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await taskService.delete(id);
-      setTasks((prev) => prev.filter((task) => task.id !== id));
+      await taskService.delete(taskToDelete.id);
+      setTasks((prev) => prev.filter((task) => task.id !== taskToDelete.id));
       Toast.show({
         type: "success",
         text1: "Tarea eliminada",
@@ -201,6 +220,8 @@ export default function TasksListScreen() {
         position: "top",
         visibilityTime: 2000,
       });
+      setDeleteConfirmationVisible(false);
+      setTaskToDelete(null);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al eliminar la tarea";
@@ -211,7 +232,14 @@ export default function TasksListScreen() {
         position: "top",
         visibilityTime: 3000,
       });
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmationVisible(false);
+    setTaskToDelete(null);
   };
 
   const handleRefresh = () => {
@@ -243,10 +271,7 @@ export default function TasksListScreen() {
           </HeaderContainer>
           <ErrorContainer>
             <ErrorText>{error}</ErrorText>
-            <CustomButton
-              text="Reintentar"
-              onPress={fetchTasks}
-            />
+            <CustomButton text="Reintentar" onPress={fetchTasks} />
           </ErrorContainer>
         </SafeArea>
       </Container>
@@ -303,6 +328,17 @@ export default function TasksListScreen() {
             showsVerticalScrollIndicator={false}
           />
         </ContentContainer>
+
+        <ConfirmationModal
+          visible={deleteConfirmationVisible}
+          title="Eliminar tarea"
+          message={`¿Estás seguro de que deseas eliminar la tarea "${taskToDelete?.title}"? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          loading={isDeleting}
+        />
       </SafeArea>
     </Container>
   );

@@ -20,6 +20,7 @@ import { sortByDateDesc } from "@/src/utils/sortByDate";
 import HabitItem from "@/components/habits/HabitItem";
 import AddHabitForm from "@/components/habits/AddHabitForm";
 import TimePickerModal from "@/components/habits/TimePickerModal";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import Toast from "react-native-toast-message";
 
 const Container = styled.View`
@@ -105,6 +106,13 @@ export default function HabitsListScreen() {
   const [selectedHabitTime, setSelectedHabitTime] = useState<string | null>(
     null
   );
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] =
+    useState(false);
+  const [habitToDelete, setHabitToDelete] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchHabits = useCallback(async () => {
     if (!user?.id) {
@@ -199,10 +207,25 @@ export default function HabitsListScreen() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
+    const habit = habits.find((h) => h.id === id);
+    if (habit) {
+      setHabitToDelete({ id: habit.id, title: habit.title });
+      setDeleteConfirmationVisible(true);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!habitToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await habitService.delete(id);
-      setHabits((prev) => prev.filter((habit) => habit.id !== id));
+      // Cancelar notificación antes de eliminar
+      await notificationService.cancelHabitNotification(habitToDelete.id);
+      await habitService.delete(habitToDelete.id);
+      setHabits((prev) =>
+        prev.filter((habit) => habit.id !== habitToDelete.id)
+      );
       Toast.show({
         type: "success",
         text1: "Hábito eliminado",
@@ -210,6 +233,8 @@ export default function HabitsListScreen() {
         position: "top",
         visibilityTime: 2000,
       });
+      setDeleteConfirmationVisible(false);
+      setHabitToDelete(null);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al eliminar el hábito";
@@ -220,7 +245,14 @@ export default function HabitsListScreen() {
         position: "top",
         visibilityTime: 3000,
       });
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmationVisible(false);
+    setHabitToDelete(null);
   };
 
   const handleRefresh = () => {
@@ -445,6 +477,17 @@ export default function HabitsListScreen() {
             </Pressable>
           </Pressable>
         </Modal>
+
+        <ConfirmationModal
+          visible={deleteConfirmationVisible}
+          title="Eliminar hábito"
+          message={`¿Estás seguro de que deseas eliminar el hábito "${habitToDelete?.title}"? Esta acción no se puede deshacer.`}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          loading={isDeleting}
+        />
       </SafeArea>
     </Container>
   );
