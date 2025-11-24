@@ -16,6 +16,7 @@ import CustomButton from "@/components/CustomButton";
 import { AuthContext } from "@/src/context/AuthContext";
 import { IHabit } from "@/src/interfaces/IHabit";
 import { habitService } from "@/src/services/habit.service";
+import { notificationService } from "@/src/services/notification.service";
 import { sortByDateDesc } from "@/src/utils/sortByDate";
 import HabitItem from "@/components/habits/HabitItem";
 import AddHabitForm from "@/components/habits/AddHabitForm";
@@ -126,6 +127,15 @@ export default function HabitsListScreen() {
       const fetchedHabits = await habitService.getAllByUserId(user.id);
       const sortedHabits = sortByDateDesc(fetchedHabits);
       setHabits(sortedHabits);
+
+      await notificationService.restoreHabitNotifications(
+        sortedHabits.map((h) => ({
+          id: h.id,
+          title: h.title,
+          notificationTime: h.notificationTime ?? null,
+          isActive: h.isActive,
+        }))
+      );
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al cargar los hábitos";
@@ -194,6 +204,16 @@ export default function HabitsListScreen() {
       setHabits((prev) =>
         prev.map((habit) => (habit.id === id ? updatedHabit : habit))
       );
+
+      if (!isActive) {
+        await notificationService.cancelHabitNotification(id);
+      } else if (updatedHabit.notificationTime) {
+        await notificationService.scheduleHabitNotification({
+          habitId: id,
+          habitTitle: updatedHabit.title,
+          time: updatedHabit.notificationTime,
+        });
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al actualizar el hábito";
@@ -274,6 +294,9 @@ export default function HabitsListScreen() {
 
     setIsSavingNotification(true);
     try {
+      const habit = habits.find((h) => h.id === selectedHabitId);
+      if (!habit) return;
+
       const updatedHabit = await habitService.update(selectedHabitId, {
         notificationTime: time || undefined,
       });
@@ -283,7 +306,12 @@ export default function HabitsListScreen() {
         )
       );
 
-      if (time) {
+      if (time && updatedHabit.isActive) {
+        await notificationService.scheduleHabitNotification({
+          habitId: selectedHabitId,
+          habitTitle: updatedHabit.title,
+          time: time,
+        });
         Toast.show({
           type: "success",
           text1: "Notificación configurada",
@@ -292,6 +320,7 @@ export default function HabitsListScreen() {
           visibilityTime: 2000,
         });
       } else {
+        await notificationService.cancelHabitNotification(selectedHabitId);
         Toast.show({
           type: "success",
           text1: "Notificación desactivada",
@@ -301,9 +330,7 @@ export default function HabitsListScreen() {
         });
       }
 
-      setTimePickerVisible(false);
-      setSelectedHabitId(null);
-      setSelectedHabitTime(null);
+      handleCloseTimePicker();
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -324,27 +351,29 @@ export default function HabitsListScreen() {
   const handleDisableNotification = async () => {
     if (!selectedHabitId) return;
 
-    handleCloseTimePicker();
-    setIsSavingNotification(false);
-    setHabits((prev) =>
-      prev.map((habit) =>
-        habit.id === selectedHabitId
-          ? { ...habit, notificationTime: null }
-          : habit
-      )
-    );
-    Toast.show({
-      type: "success",
-      text1: "Notificación desactivada",
-      text2: "La notificación se ha desactivado correctamente",
-      position: "top",
-      visibilityTime: 2000,
-    });
-
+    setIsSavingNotification(true);
     try {
-      await habitService.update(selectedHabitId!, {
+      await notificationService.cancelHabitNotification(selectedHabitId);
+
+      const updatedHabit = await habitService.update(selectedHabitId, {
         notificationTime: null,
       });
+
+      setHabits((prev) =>
+        prev.map((habit) =>
+          habit.id === selectedHabitId ? updatedHabit : habit
+        )
+      );
+
+      Toast.show({
+        type: "success",
+        text1: "Notificación desactivada",
+        text2: "La notificación se ha desactivado correctamente",
+        position: "top",
+        visibilityTime: 2000,
+      });
+
+      handleCloseTimePicker();
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -357,6 +386,8 @@ export default function HabitsListScreen() {
         position: "top",
         visibilityTime: 3000,
       });
+    } finally {
+      setIsSavingNotification(false);
     }
   };
 
