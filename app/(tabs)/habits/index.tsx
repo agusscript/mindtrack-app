@@ -19,7 +19,7 @@ import { habitService } from "@/src/services/habit.service";
 import { notificationService } from "@/src/services/notification.service";
 import { sortByDateDesc } from "@/src/utils/sortByDate";
 import HabitItem from "@/components/habits/HabitItem";
-import AddHabitForm from "@/components/habits/AddHabitForm";
+import AddHabitModal from "@/components/habits/AddHabitModal";
 import TimePickerModal from "@/components/habits/TimePickerModal";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import Toast from "react-native-toast-message";
@@ -28,6 +28,7 @@ import { useNotificationsSetup } from "@/src/hooks/useNotificationsSetup";
 const Container = styled.View`
   flex: 1;
   background-color: ${Colors.light.background};
+  position: relative;
 `;
 
 const SafeArea = styled(SafeAreaView)`
@@ -94,6 +95,31 @@ const ErrorText = styled.Text`
   margin-bottom: 16px;
 `;
 
+const FloatingButton = styled.TouchableOpacity`
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background-color: ${Colors.light.buttonEnabled};
+  justify-content: center;
+  align-items: center;
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 4px;
+  elevation: 8;
+  z-index: 10;
+`;
+
+const FloatingButtonText = styled.Text`
+  font-size: 28px;
+  color: #ffffff;
+  font-weight: 300;
+  line-height: 32px;
+`;
+
 export default function HabitsListScreen() {
   useNotificationsSetup();
   const router = useRouter();
@@ -116,6 +142,7 @@ export default function HabitsListScreen() {
     title: string;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [addHabitModalVisible, setAddHabitModalVisible] = useState(false);
 
   const fetchHabits = useCallback(async () => {
     if (!user?.id) {
@@ -185,6 +212,7 @@ export default function HabitsListScreen() {
         position: "top",
         visibilityTime: 2000,
       });
+      setAddHabitModalVisible(false);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Error al crear el hábito";
@@ -447,8 +475,6 @@ export default function HabitsListScreen() {
                 }`}
           </Subtitle>
 
-          <AddHabitForm onSubmit={handleAddHabit} isLoading={isAdding} />
-
           <FlatList
             data={habits}
             keyExtractor={(item) => item.id.toString()}
@@ -510,18 +536,29 @@ export default function HabitsListScreen() {
             </Pressable>
           </Pressable>
         </Modal>
-
-        <ConfirmationModal
-          visible={deleteConfirmationVisible}
-          title="Eliminar hábito"
-          message={`¿Estás seguro de que deseas eliminar el hábito "${habitToDelete?.title}"? Esta acción no se puede deshacer.`}
-          confirmText="Eliminar"
-          cancelText="Cancelar"
-          onConfirm={handleConfirmDelete}
-          onCancel={handleCancelDelete}
-          loading={isDeleting}
-        />
       </SafeArea>
+
+      <FloatingButton onPress={() => setAddHabitModalVisible(true)}>
+        <FloatingButtonText>+</FloatingButtonText>
+      </FloatingButton>
+
+      <AddHabitModal
+        visible={addHabitModalVisible}
+        onClose={() => setAddHabitModalVisible(false)}
+        onSubmit={handleAddHabit}
+        isLoading={isAdding}
+      />
+
+      <ConfirmationModal
+        visible={deleteConfirmationVisible}
+        title="Eliminar hábito"
+        message={`¿Estás seguro de que deseas eliminar el hábito "${habitToDelete?.title}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        loading={isDeleting}
+      />
     </Container>
   );
 }
