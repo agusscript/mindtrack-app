@@ -44,9 +44,10 @@ const HabitTitle = styled.Text<{ isActive: boolean }>`
   opacity: ${(props) => (props.isActive ? 1 : 0.6)};
 `;
 
-const NotificationButton = styled.TouchableOpacity`
+const NotificationButton = styled.TouchableOpacity<{ disabled: boolean }>`
   padding: 8px;
   margin-right: 8px;
+  opacity: ${(props) => (props.disabled ? 0.4 : 1)};
 `;
 
 const DeleteButton = styled.TouchableOpacity`
@@ -69,6 +70,7 @@ export default function HabitItem({
           onValueChange={(value) => onToggleActive(habit.id, value)}
           trackColor={{ false: "#D1D5DB", true: "#007AFF" }}
           thumbColor={habit.isActive ? "#FFFFFF" : "#F3F4F6"}
+          style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
         />
       </ToggleContainer>
 
@@ -76,11 +78,24 @@ export default function HabitItem({
         <HabitTitle isActive={habit.isActive}>{habit.title}</HabitTitle>
       </HabitContent>
 
-      <NotificationButton onPress={() => onNotificationPress(habit.id)}>
+      <NotificationButton
+        disabled={!habit.isActive}
+        onPress={() => {
+          if (habit.isActive) {
+            onNotificationPress(habit.id);
+          }
+        }}
+      >
         <Ionicons
           name={hasNotification ? "notifications" : "notifications-outline"}
           size={24}
-          color={hasNotification ? "#007AFF" : "#9CA3AF"}
+          color={
+            !habit.isActive
+              ? "#D1D5DB"
+              : hasNotification
+              ? "#007AFF"
+              : "#9CA3AF"
+          }
         />
       </NotificationButton>
 
