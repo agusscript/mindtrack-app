@@ -23,6 +23,7 @@ import AddHabitForm from "@/components/habits/AddHabitForm";
 import TimePickerModal from "@/components/habits/TimePickerModal";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import Toast from "react-native-toast-message";
+import { useNotificationsSetup } from "@/src/hooks/useNotificationsSetup";
 
 const Container = styled.View`
   flex: 1;
@@ -94,6 +95,7 @@ const ErrorText = styled.Text`
 `;
 
 export default function HabitsListScreen() {
+  useNotificationsSetup();
   const router = useRouter();
   const { user } = React.useContext(AuthContext)!;
   const [habits, setHabits] = useState<IHabit[]>([]);
