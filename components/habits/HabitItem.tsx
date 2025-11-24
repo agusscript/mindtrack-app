@@ -15,7 +15,8 @@ const HabitContainer = styled.View<{ isActive: boolean }>`
   flex-direction: row;
   align-items: center;
   background-color: #ffffff;
-  padding: 16px;
+  padding-vertical: 14px;
+  padding-horizontal: 8px;
   margin-bottom: 12px;
   border-radius: 12px;
   border-width: 1px;

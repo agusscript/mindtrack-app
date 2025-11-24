@@ -270,7 +270,6 @@ export default function HabitsListScreen() {
 
     setIsDeleting(true);
     try {
-      // Cancelar notificación antes de eliminar
       await notificationService.cancelHabitNotification(habitToDelete.id);
       await habitService.delete(habitToDelete.id);
       setHabits((prev) =>
