@@ -58,6 +58,12 @@ export default function TabLayout() {
             title: "Light Sensor",
           }}
         />
+        <Stack.Screen
+          name="weather-insight"
+          options={{
+            title: "Weather Insight",
+          }}
+        />
       </Stack>
     </AuthProvider>
   );

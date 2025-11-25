@@ -58,6 +58,14 @@ export default function DashboardScreen() {
       isAvailable: false,
     },
     {
+      id: "weather-insight",
+      title: "Clima y Bienestar",
+      description: "Monitorea el clima actual y recibí sugerencias para tu bienestar",
+      icon: "🌤",
+      onPress: () => router.push("/(tabs)/weather-insight"),
+      isAvailable: true,
+    },
+    {
       id: "meditation",
       title: "Meditación",
       description: "Ejercicios de mindfulness",
