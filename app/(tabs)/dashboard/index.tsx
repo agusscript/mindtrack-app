@@ -1,3 +1,4 @@
+import React from "react";
 import {
   StyleSheet,
   View,
@@ -9,16 +10,17 @@ import { useAuthProvider } from "@/src/hooks/useAuthProvider";
 import { Colors } from "@/constants/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import MenuCard from "@/components/MenuCard";
 
 export default function DashboardScreen() {
-  const { handleSignOut } = useAuthProvider();
+  const { handleSignOut, user } = useAuthProvider();
   const router = useRouter();
 
   const menuItems = [
     {
       id: "todo-list",
       title: "Lista de Tareas",
-      description: "Organiza tus tareas diarias",
+      description: "Gestiona y organiza tus tareas diarias",
       icon: "📝",
       onPress: () => router.push("/(tabs)/tasks"),
       isAvailable: true,
@@ -49,8 +51,8 @@ export default function DashboardScreen() {
     },
     {
       id: "mood-tracker",
-      title: "Registro de Estado de Ánimo",
-      description: "Monitorea tu bienestar emocional",
+      title: "Estado de Ánimo",
+      description: "Registra tu bienestar emocional",
       icon: "😊",
       onPress: () => {},
       isAvailable: false,
@@ -67,52 +69,22 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.welcomeText}>¡Hola!</Text>
+          <Text style={styles.welcomeText}>¡Hola, {user?.name}!</Text>
           <Text style={styles.subtitleText}>¿Qué quieres hacer hoy?</Text>
         </View>
 
-        <View style={styles.menuContainer}>
+        <View style={styles.grid}>
           {menuItems.map((item) => (
-            <TouchableOpacity
+            <MenuCard
               key={item.id}
-              style={[
-                styles.menuItem,
-                !item.isAvailable && styles.menuItemDisabled,
-              ]}
+              icon={item.icon}
+              title={item.title}
+              description={item.description}
+              isAvailable={item.isAvailable}
               onPress={item.onPress}
-              activeOpacity={0.7}
-              disabled={!item.isAvailable}
-            >
-              <View style={styles.menuItemContent}>
-                <Text style={styles.menuIcon}>{item.icon}</Text>
-                <View style={styles.menuTextContainer}>
-                  <Text
-                    style={[
-                      styles.menuTitle,
-                      !item.isAvailable && styles.menuTitleDisabled,
-                    ]}
-                  >
-                    {item.title}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.menuDescription,
-                      !item.isAvailable && styles.menuDescriptionDisabled,
-                    ]}
-                  >
-                    {item.description}
-                  </Text>
-                </View>
-                {!item.isAvailable && (
-                  <Text style={styles.comingSoonBadge}>Próximamente</Text>
-                )}
-              </View>
-            </TouchableOpacity>
+            />
           ))}
         </View>
 
@@ -135,107 +107,42 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
   },
-  scrollView: {
-    flex: 1,
-  },
   header: {
     paddingHorizontal: 24,
     paddingTop: 20,
-    paddingBottom: 30,
+    paddingBottom: 10,
   },
   welcomeText: {
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "700",
     color: Colors.light.text,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   subtitleText: {
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.light.text,
     opacity: 0.7,
   },
-  menuContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 30,
-  },
-  menuItem: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  menuItemDisabled: {
-    opacity: 0.6,
-  },
-  menuItemContent: {
+  grid: {
     flexDirection: "row",
-    alignItems: "center",
-    padding: 20,
-  },
-  menuIcon: {
-    fontSize: 32,
-    marginRight: 16,
-  },
-  menuTextContainer: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.light.text,
-    marginBottom: 4,
-  },
-  menuTitleDisabled: {
-    color: "#999",
-  },
-  menuDescription: {
-    fontSize: 14,
-    color: Colors.light.text,
-    opacity: 0.7,
-  },
-  menuDescriptionDisabled: {
-    color: "#999",
-    opacity: 0.5,
-  },
-  comingSoonBadge: {
-    backgroundColor: "#FFA500",
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    overflow: "hidden",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
   logoutContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 30,
+    paddingVertical: 40,
   },
   logoutButton: {
     backgroundColor: "#FF6B6B",
     paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 3,
   },
   logoutButtonText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
