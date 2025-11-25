@@ -40,6 +40,14 @@ export default function DashboardScreen() {
       isAvailable: true,
     },
     {
+      id: "light-sensor",
+      title: "Sensor de Luz",
+      description: "Monitorea la intensidad de la luz",
+      icon: "💡",
+      onPress: () => router.push("/(tabs)/light-sensor"),
+      isAvailable: true,
+    },
+    {
       id: "mood-tracker",
       title: "Registro de Estado de Ánimo",
       description: "Monitorea tu bienestar emocional",
