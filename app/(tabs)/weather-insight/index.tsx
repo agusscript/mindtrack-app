@@ -12,17 +12,30 @@ import { Colors } from "@/constants/theme";
 import { weatherService } from "@/src/services/weather.service";
 import { IWeather } from "@/src/interfaces/IWeather";
 import { getWeatherFeedback } from "@/src/utils/getWeatherFeedback";
+import { useLocation } from "@/src/hooks/useLocation";
 
 export default function WeatherInsightScreen() {
   const [weather, setWeather] = useState<IWeather | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const {
+    coords,
+    loading: locationLoading,
+    isUsingDefault,
+    locationName,
+  } = useLocation();
+
   useEffect(() => {
     const fetchWeather = async () => {
+      if (!coords) return;
+
       try {
         setLoading(true);
-        const data = await weatherService.getCurrentWeather();
+        const data = await weatherService.getCurrentWeather(
+          coords.latitude,
+          coords.longitude
+        );
         setWeather(data);
       } catch (err) {
         console.error(err);
@@ -32,10 +45,13 @@ export default function WeatherInsightScreen() {
       }
     };
 
-    fetchWeather();
-  }, []);
+    if (!locationLoading && coords) {
+      fetchWeather();
+    }
+  }, [coords, locationLoading]);
 
   const feedback = getWeatherFeedback({ weather });
+  const isLoading = loading || locationLoading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -48,21 +64,44 @@ export default function WeatherInsightScreen() {
           Observá el clima actual y recibí sugerencias para tu bienestar diario.
         </Text>
 
-        {loading && (
+        {isLoading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.light.tint} />
-            <Text style={styles.loadingText}>Obteniendo información...</Text>
+            <Text style={styles.loadingText}>
+              {locationLoading
+                ? "Obteniendo ubicación..."
+                : "Obteniendo información..."}
+            </Text>
           </View>
         )}
 
-        {!loading && error && (
+        {!isLoading && error && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
-        {!loading && weather && (
+        {!isLoading && weather && (
           <>
+            <View style={styles.locationBadge}>
+              <Ionicons
+                name={isUsingDefault ? "location-outline" : "location"}
+                size={16}
+                color={isUsingDefault ? "#888" : Colors.light.tint}
+              />
+              <Text
+                style={[
+                  styles.locationText,
+                  !isUsingDefault && { color: Colors.light.tint },
+                ]}
+              >
+                {locationName || "Cargando..."}
+              </Text>
+              {isUsingDefault && (
+                <Text style={styles.locationDefault}>(por defecto)</Text>
+              )}
+            </View>
+
             <View style={styles.weatherCard}>
               <Ionicons
                 name="partly-sunny-outline"
@@ -134,6 +173,23 @@ const styles = StyleSheet.create({
     color: "red",
     textAlign: "center",
     fontSize: 16,
+  },
+  locationBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    gap: 6,
+  },
+  locationText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#888",
+  },
+  locationDefault: {
+    fontSize: 12,
+    color: "#aaa",
+    fontStyle: "italic",
   },
   weatherCard: {
     backgroundColor: "#fff",
