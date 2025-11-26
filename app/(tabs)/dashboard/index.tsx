@@ -66,6 +66,14 @@ export default function DashboardScreen() {
       isAvailable: true,
     },
     {
+      id: "horoscope",
+      title: "Horóscopo",
+      description: "Descubre tu horóscopo del día",
+      icon: "🌙",
+      onPress: () => router.push("/(tabs)/horoscope"),
+      isAvailable: true,
+    },
+    {
       id: "meditation",
       title: "Meditación",
       description: "Ejercicios de mindfulness",

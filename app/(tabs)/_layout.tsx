@@ -64,6 +64,12 @@ export default function TabLayout() {
             title: "Weather Insight",
           }}
         />
+        <Stack.Screen
+          name="horoscope"
+          options={{
+            title: "Horoscope",
+          }}
+        />
       </Stack>
     </AuthProvider>
   );
