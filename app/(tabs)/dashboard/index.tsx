@@ -50,14 +50,6 @@ export default function DashboardScreen() {
       isAvailable: true,
     },
     {
-      id: "mood-tracker",
-      title: "Estado de Ánimo",
-      description: "Registra tu bienestar emocional",
-      icon: "😊",
-      onPress: () => {},
-      isAvailable: false,
-    },
-    {
       id: "weather-insight",
       title: "Clima y Bienestar",
       description: "Monitorea el clima actual y recibí sugerencias para tu bienestar",
@@ -72,14 +64,6 @@ export default function DashboardScreen() {
       icon: "🌙",
       onPress: () => router.push("/(tabs)/horoscope"),
       isAvailable: true,
-    },
-    {
-      id: "meditation",
-      title: "Meditación",
-      description: "Ejercicios de mindfulness",
-      icon: "🧘",
-      onPress: () => {},
-      isAvailable: false,
     },
   ];
 
